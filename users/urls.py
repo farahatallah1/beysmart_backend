@@ -1,10 +1,6 @@
 from django.urls import path
-from . import views
-
-# urlpatterns is a list of paths
-# urlconfig
+from .views import RegisterView
 
 urlpatterns = [
-    # Add your URL patterns here
-    # Example: path('', views.home, name='home'),
+    path("register/", RegisterView.as_view(), name="register"),
 ]

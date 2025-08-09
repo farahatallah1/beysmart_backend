@@ -3,7 +3,7 @@ from django.db import models
 
 # Create your models here.
 class CustomUser(AbstractUser):
-    age = models.DateField(null=True, blank=True)  
+    birthday = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=[
         ('Male', 'Male'),
         ('Female', 'Female'),
