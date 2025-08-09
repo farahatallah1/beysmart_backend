@@ -11,9 +11,22 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file at project root (backend/.env)
+load_dotenv(BASE_DIR / ".env")
+
+# ThingsBoard configuration
+TB_BASE_URL = os.getenv("TB_BASE_URL")
+TB_ADMIN_EMAIL = os.getenv("TB_ADMIN_EMAIL")
+TB_ADMIN_PASSWORD = os.getenv("TB_ADMIN_PASSWORD")
+TB_CUSTOMER_ID = os.getenv("TB_CUSTOMER_ID")
 
 
 # Quick-start development settings - unsuitable for production
@@ -137,3 +150,4 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
 }
+
