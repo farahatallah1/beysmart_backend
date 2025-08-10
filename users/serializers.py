@@ -5,11 +5,6 @@ from rest_framework.validators import UniqueValidator
 
 User = get_user_model()
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("id", "username", "email", "first_name", "last_name", "birthday", "gender")
-
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
@@ -30,8 +25,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("confirm_password")
         password = validated_data.pop("password")
-
         user = User(**validated_data)
         user.set_password(password)
+        user.is_active = False  # prevent login until email verified
         user.save()
         return user

@@ -12,11 +12,10 @@ def get_tb_token():
     res.raise_for_status()
     return res.json()["token"]
 
-def create_tb_user(email, first_name, last_name, password):
+def create_tb_user(email, first_name, last_name):
     """Create a ThingsBoard user under the configured customer."""
     token = get_tb_token()
-    # Request ThingsBoard to send activation email to the created user
-    url = f"{settings.TB_BASE_URL}/api/user?sendActivationMail=true"
+    url = f"{settings.TB_BASE_URL}/api/user?sendActivationMail=false"
     headers = {"X-Authorization": f"Bearer {token}"}
 
     payload = {
@@ -26,7 +25,6 @@ def create_tb_user(email, first_name, last_name, password):
         "lastName": last_name,
         "customerId": {"id": settings.TB_CUSTOMER_ID, "entityType": "CUSTOMER"},
         "additionalInfo": {
-            "defaultDashboardId": None,
             "description": "Created from Django backend"
         }
     }

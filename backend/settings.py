@@ -28,6 +28,27 @@ TB_ADMIN_EMAIL = os.getenv("TB_ADMIN_EMAIL")
 TB_ADMIN_PASSWORD = os.getenv("TB_ADMIN_PASSWORD")
 TB_CUSTOMER_ID = os.getenv("TB_CUSTOMER_ID")
 
+#email verification
+
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+# Debug email settings (remove in production)
+print(f"Email settings loaded:")
+print(f"EMAIL_HOST: {EMAIL_HOST}")
+print(f"EMAIL_PORT: {EMAIL_PORT}")
+print(f"EMAIL_HOST_USER: {EMAIL_HOST_USER}")
+print(f"EMAIL_USE_TLS: {EMAIL_USE_TLS}")
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv('BACKEND_URL')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
