@@ -1,5 +1,5 @@
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
@@ -7,9 +7,11 @@ from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.conf import settings
+from django.utils import timezone
+import uuid
 
-from .models import CustomUser
-from .serializers import RegisterSerializer
+from .models import CustomUser, CustomerInvitation
+from .serializers import RegisterSerializer, CustomerInvitationSerializer
 from services.thingboard_services import create_tb_user
 
 
@@ -39,6 +41,56 @@ class RegisterView(generics.CreateAPIView):
             # In production, you might want to handle this differently
             print(f"User created but email verification failed. Verification link: {verification_link}")
 
+        # ADDITIONAL: Send approval request if customer user
+        if user.user_type == 'CUSTOMER_USER' and user.parent_customer_id:
+            self.send_approval_request_email(user)
+
+    def send_approval_request_email(self, user):
+        # Send email to customer asking for approval
+        try:
+            customer = CustomUser.objects.get(id=user.parent_customer_id)
+            
+            approval_link = f"{settings.FRONTEND_URL}/approve-user/{user.id}/"
+            
+            try:
+                send_mail(
+                    "New User Approval Request",
+                    f"A new user {user.first_name} {user.last_name} ({user.email}) has requested to join your customer account. Click here to approve: {approval_link}",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [customer.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Approval email sending failed: {e}")
+        except CustomUser.DoesNotExist:
+            print(f"Customer with ID {user.parent_customer_id} not found")
+
+
+class SendInvitationView(generics.CreateAPIView):
+    serializer_class = CustomerInvitationSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        invitation = serializer.save(customer=self.request.user)
+        
+        # Generate unique token
+        invitation.token = str(uuid.uuid4())
+        invitation.expires_at = timezone.now() + timezone.timedelta(days=7)
+        invitation.save()
+        
+        # Send invitation email
+        invitation_link = f"{settings.FRONTEND_URL}/register?invitation={invitation.token}"
+        
+        try:
+            send_mail(
+                "You're invited to join our platform",
+                f"You've been invited by {self.request.user.first_name} {self.request.user.last_name} to join their customer account. Click here to register: {invitation_link}",
+                settings.DEFAULT_FROM_EMAIL,
+                [invitation.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Invitation email sending failed: {e}")
 
 
 def verify_email(request, uidb64, token):
@@ -57,7 +109,9 @@ def verify_email(request, uidb64, token):
             create_tb_user(
                 email=user.email,
                 first_name=user.first_name,
-                last_name=user.last_name
+                last_name=user.last_name,
+                user_type=user.user_type,
+                parent_customer_id=user.parent_customer_id
             )
         except Exception as e:
             print(f"ThingsBoard user creation failed: {e}")
@@ -65,3 +119,39 @@ def verify_email(request, uidb64, token):
         return HttpResponse("<h1>Email verified successfully! You can now log in.</h1>")
     else:
         return HttpResponse("<h1>Invalid or expired verification link.</h1>", status=400)
+
+
+def approve_user(request, user_id):
+    try:
+        user = CustomUser.objects.get(pk=user_id)
+        customer = CustomUser.objects.get(id=user.parent_customer_id)
+        
+        # Check if the current user is the customer
+        if request.user != customer:
+            return HttpResponse("<h1>Unauthorized</h1>", status=403)
+        
+        # Approve the user
+        user.is_approved = True
+        user.approved_by = customer
+        user.approved_at = timezone.now()
+        user.save()
+        
+        # Send activation email to approved user (using your existing email system)
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        verification_link = f"{settings.FRONTEND_URL}/verify-email/{uidb64}/{token}/"
+        
+        try:
+            send_mail(
+                "Your account has been approved",
+                f"Your account has been approved by {customer.first_name} {customer.last_name}. Click here to activate: {verification_link}",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Approval email sending failed: {e}")
+        
+        return HttpResponse("<h1>User approved successfully!</h1>")
+    except CustomUser.DoesNotExist:
+        return HttpResponse("<h1>User not found</h1>", status=404)
