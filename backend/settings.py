@@ -26,7 +26,6 @@ load_dotenv(BASE_DIR / ".env")
 TB_BASE_URL = os.getenv("TB_BASE_URL")
 TB_ADMIN_EMAIL = os.getenv("TB_ADMIN_EMAIL")
 TB_ADMIN_PASSWORD = os.getenv("TB_ADMIN_PASSWORD")
-TB_CUSTOMER_ID = os.getenv("TB_CUSTOMER_ID")
 
 #email verification
 
@@ -112,11 +111,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'beysmart_db',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
