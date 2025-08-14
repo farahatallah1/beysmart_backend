@@ -1,5 +1,9 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
@@ -8,11 +12,18 @@ from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import authenticate
 import uuid
 
 from .models import CustomUser, CustomerInvitation
-from .serializers import RegisterSerializer, CustomerInvitationSerializer
+from .serializers import (
+    RegisterSerializer, 
+    CustomerInvitationSerializer, 
+    UserProfileSerializer,
+    CustomTokenObtainPairSerializer
+)
 from services.thingboard_services import create_tb_user
+from services.thingsboard_auth import tb_auth
 
 
 class RegisterView(generics.CreateAPIView):
@@ -155,3 +166,102 @@ def approve_user(request, user_id):
         return HttpResponse("<h1>User approved successfully!</h1>")
     except CustomUser.DoesNotExist:
         return HttpResponse("<h1>User not found</h1>", status=404)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """Custom login view that returns JWT tokens with user info"""
+    serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response({
+                'error': 'Invalid credentials',
+                'detail': str(e)
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        user = serializer.user
+        
+        # Check if user is active and approved
+        if not user.is_active:
+            return Response({
+                'error': 'Account not activated',
+                'detail': 'Please verify your email first'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if not user.is_approved:
+            return Response({
+                'error': 'Account not approved',
+                'detail': 'Your account is pending approval'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Verify user exists in ThingsBoard
+        try:
+            tb_verification = tb_auth.verify_user_access(user.email, user.user_type)
+            
+            if not tb_verification['verified']:
+                # Log the issue but don't block login for now
+                print(f"ThingsBoard verification failed for {user.email}: {tb_verification['message']}")
+                
+                # Optionally create user in ThingsBoard if missing
+                try:
+                    if tb_verification.get('tb_data') is None:
+                        print(f"Creating missing ThingsBoard user for {user.email}")
+                        tb_auth.create_thingsboard_user(
+                            email=user.email,
+                            first_name=user.first_name,
+                            last_name=user.last_name,
+                            user_type=user.user_type,
+                            parent_customer_id=user.parent_customer_id
+                        )
+                        print(f"Successfully created ThingsBoard user for {user.email}")
+                except Exception as e:
+                    print(f"Failed to create ThingsBoard user: {e}")
+                
+        except Exception as e:
+            print(f"ThingsBoard verification error for {user.email}: {e}")
+            # Continue with login even if ThingsBoard check fails
+        
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'user_type': user.user_type,
+                'is_approved': user.is_approved,
+            }
+        })
+
+
+class LogoutView(APIView):
+    """Logout view that blacklists the refresh token"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"message": "Successfully logged out"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    """View to get and update user profile"""
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user

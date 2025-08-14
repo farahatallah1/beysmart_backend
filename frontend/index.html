@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beysmart - Smart IoT Management Platform</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-microchip brand-icon"></i>
+                <span class="brand-text">Beysmart</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#" class="nav-link" onclick="showLogin()">Login</a>
+                <a href="#" class="nav-link" onclick="showRegister()">Register</a>
+                <a href="#" class="nav-link nav-logout" id="logout-btn" onclick="logout()" style="display: none;">Logout</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Landing Screen -->
+        <div class="screen active" id="landing-screen">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            Smart IoT Management
+                            <span class="gradient-text">Made Simple</span>
+                        </h1>
+                        <p class="hero-description">
+                            Manage your IoT devices, monitor data, and collaborate with your team through our powerful platform powered by ThingsBoard.
+                        </p>
+                        <div class="hero-buttons">
+                            <button class="btn btn-primary" onclick="showRegister()">
+                                <i class="fas fa-rocket"></i>
+                                Get Started
+                            </button>
+                            <button class="btn btn-secondary" onclick="showLogin()">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Sign In
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="device-grid">
+                            <div class="device-card">
+                                <i class="fas fa-thermometer-half"></i>
+                                <span>Temperature</span>
+                            </div>
+                            <div class="device-card">
+                                <i class="fas fa-tint"></i>
+                                <span>Humidity</span>
+                            </div>
+                            <div class="device-card">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Smart Lights</span>
+                            </div>
+                            <div class="device-card">
+                                <i class="fas fa-video"></i>
+                                <span>Security</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <div class="container">
+                    <h2 class="section-title">Platform Features</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>Team Collaboration</h3>
+                            <p>Invite team members and manage access to your IoT devices with granular permissions.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Real-time Analytics</h3>
+                            <p>Monitor device data in real-time with powerful dashboards and custom visualizations.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>Secure & Reliable</h3>
+                            <p>Enterprise-grade security with JWT authentication and role-based access control.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div class="screen" id="login-screen">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to your Beysmart account</p>
+                    </div>
+                    <form class="auth-form" id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="login-email" name="username" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="login-password" name="password" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('login-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Sign In
+                        </button>
+                    </form>
+                    <div class="auth-footer">
+                        <p>Don't have an account? <a href="#" onclick="showRegister()">Create Account</a></p>
+                        <p><a href="#" onclick="showHome()">← Back to Home</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div class="screen" id="register-screen">
+            <div class="auth-container">
+                <div class="auth-card register-card">
+                    <div class="auth-header">
+                        <h2>Create Account</h2>
+                        <p>Join Beysmart and start managing your IoT devices</p>
+                    </div>
+                    <form class="auth-form" id="register-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first-name">First Name</label>
+                                <input type="text" id="first-name" name="first_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="last-name">Last Name</label>
+                                <input type="text" id="last-name" name="last_name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="password" name="password" required>
+                                    <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-password">Confirm Password</label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="confirm-password" name="confirm_password" required>
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="birthday">Birthday</label>
+                                <input type="date" id="birthday" name="birthday">
+                            </div>
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" name="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-type">Account Type</label>
+                            <select id="user-type" name="user_type" required onchange="toggleCustomerField()">
+                                <option value="">Select Account Type</option>
+                                <option value="CUSTOMER">Customer (Device Owner)</option>
+                                <option value="CUSTOMER_USER">Customer User (Team Member)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="customer-field" style="display: none;">
+                            <label for="parent-customer">Customer ID</label>
+                            <input type="text" id="parent-customer" name="parent_customer_id" placeholder="Enter Customer ID provided by your team">
+                            <small>Required for Customer User accounts</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-user-plus"></i>
+                            Create Account
+                        </button>
+                    </form>
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="#" onclick="showLogin()">Sign In</a></p>
+                        <p><a href="#" onclick="showHome()">← Back to Home</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div class="screen" id="dashboard-screen">
+            <div class="dashboard-container">
+                <div class="dashboard-header">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <h3 id="user-name">Welcome Back!</h3>
+                            <p id="user-email">user@example.com</p>
+                            <span class="user-badge" id="user-type-badge">Customer</span>
+                        </div>
+                    </div>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-outline" onclick="showProfile()">
+                            <i class="fas fa-cog"></i>
+                            Settings
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>12</h4>
+                                <p>Connected Devices</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>5</h4>
+                                <p>Team Members</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>98%</h4>
+                                <p>Uptime</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>3</h4>
+                                <p>Alerts</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-panels">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Recent Activity</h3>
+                                <button class="btn btn-sm">View All</button>
+                            </div>
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-icon success">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p>Temperature sensor connected successfully</p>
+                                        <small>2 minutes ago</small>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon warning">
+                                        <i class="fas fa-exclamation"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p>High temperature alert from Device #3</p>
+                                        <small>15 minutes ago</small>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon info">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p>New team member John Doe added</p>
+                                        <small>1 hour ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Device Status</h3>
+                                <button class="btn btn-sm">Manage</button>
+                            </div>
+                            <div class="device-list">
+                                <div class="device-item">
+                                    <div class="device-icon">
+                                        <i class="fas fa-thermometer-half"></i>
+                                    </div>
+                                    <div class="device-info">
+                                        <h4>Temperature Sensor #1</h4>
+                                        <p>Living Room - 22.5°C</p>
+                                    </div>
+                                    <div class="device-status online">
+                                        <span></span>
+                                        Online
+                                    </div>
+                                </div>
+                                <div class="device-item">
+                                    <div class="device-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div class="device-info">
+                                        <h4>Smart Light #2</h4>
+                                        <p>Kitchen - 75% Brightness</p>
+                                    </div>
+                                    <div class="device-status online">
+                                        <span></span>
+                                        Online
+                                    </div>
+                                </div>
+                                <div class="device-item">
+                                    <div class="device-icon">
+                                        <i class="fas fa-video"></i>
+                                    </div>
+                                    <div class="device-info">
+                                        <h4>Security Camera #3</h4>
+                                        <p>Front Door - Recording</p>
+                                    </div>
+                                    <div class="device-status offline">
+                                        <span></span>
+                                        Offline
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div class="screen" id="profile-screen">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2>User Profile</h2>
+                        <p>Manage your account information</p>
+                    </div>
+                    <form class="auth-form" id="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profile-first-name">First Name</label>
+                                <input type="text" id="profile-first-name" name="first_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-last-name">Last Name</label>
+                                <input type="text" id="profile-last-name" name="last_name">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profile-username">Username</label>
+                            <input type="text" id="profile-username" name="username" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profile-email">Email Address</label>
+                            <input type="email" id="profile-email" name="email" readonly>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profile-birthday">Birthday</label>
+                                <input type="date" id="profile-birthday" name="birthday">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-gender">Gender</label>
+                                <select id="profile-gender" name="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Account Information</label>
+                            <div class="readonly-info">
+                                <p><strong>Account Type:</strong> <span id="profile-user-type"></span></p>
+                                <p><strong>Status:</strong> <span id="profile-status" class="status-badge"></span></p>
+                                <p><strong>Member Since:</strong> <span id="profile-join-date"></span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Update Profile
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="showDashboard()">
+                                <i class="fas fa-arrow-left"></i>
+                                Back to Dashboard
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Status Screen -->
+        <div class="screen" id="verification-screen">
+            <div class="status-container">
+                <div class="status-card">
+                    <div class="status-icon" id="verification-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h2 id="verification-title">Email Verification Required</h2>
+                    <p id="verification-message">
+                        We've sent a verification email to your address. Please check your inbox and click the verification link to activate your account.
+                    </p>
+                    <div class="status-actions">
+                        <button class="btn btn-primary" onclick="showLogin()">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Go to Login
+                        </button>
+                        <button class="btn btn-secondary" onclick="showHome()">
+                            <i class="fas fa-home"></i>
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <div class="toast-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="toast-message">
+                <h4 id="toast-title">Success</h4>
+                <p id="toast-text">Operation completed successfully</p>
+            </div>
+        </div>
+        <button class="toast-close" onclick="hideToast()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script src="scripts/api.js"></script>
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
