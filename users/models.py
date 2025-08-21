@@ -1,9 +1,17 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
+import uuid
+import random
+from django.utils import timezone
 
 # Create your models here.
 class CustomUser(AbstractUser):
+    first_name = models.CharField(max_length=150, blank=True, null=True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
+    #add profile picture
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     birthday = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=[
         ('Male', 'Male'),
@@ -13,14 +21,17 @@ class CustomUser(AbstractUser):
 
     # email must be unique
     email = models.EmailField(unique=True)
-
+    email_verified = models.BooleanField(default=False)
+    #phone number for otps later
+    phone_number = PhoneNumberField(null=False, blank=False, unique=True,region="EG",default="0")
+    
     user_type = models.CharField(
         max_length=20, 
         choices=[
             ('CUSTOMER', 'Customer'),
             ('CUSTOMER_USER', 'Customer User')
         ],
-        default='CUSTOMER_USER'
+        default='CUSTOMER',null=True, blank=True
     )
     
     # If they choose to be a customer user, they need to specify which customer
@@ -55,3 +66,4 @@ class CustomerInvitation(models.Model):
     
     def __str__(self):
         return f"Invitation for {self.email} from {self.customer.username}"
+        
