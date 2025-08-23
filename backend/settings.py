@@ -53,7 +53,11 @@ BACKEND_URL = os.getenv('BACKEND_URL')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@g+5*dlepvs!#l8%0@7^3)0dlz$l!6no1l+%sn+-zd45o1vre7'
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+# Ensure SECRET_KEY is set
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is not set!")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -71,16 +75,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'users',
     'phonenumber_field',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'backend.middleware.AbsoluteSessionTimeoutMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -164,10 +171,33 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
 }
+
+# Session settings: 2-minute inactivity, logout on app close
+SESSION_COOKIE_AGE = 120  # seconds
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = False if DEBUG else True
+
+# CSRF cookie settings for mobile clients (HTTPS required in prod)
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = False if DEBUG else True
+
+# CORS for React Native dev (adjust as needed)
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:19006",
+    "http://10.0.2.2:19006",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:19006",
+    "http://10.0.2.2:19006",
+]
 

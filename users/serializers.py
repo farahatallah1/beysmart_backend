@@ -78,3 +78,15 @@ class ResetPasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ('first_name', 'last_name', 'birthday', 'gender')
+        
+    def validate_birthday(self, value):
+        """Validate birthday is not in the future"""
+        if value and value > timezone.now().date():
+            raise serializers.ValidationError("Birthday cannot be in the future.")
+        return value
